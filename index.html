@@ -1,1 +1,346 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scopus Data Visualization Dashboard</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+        }
 
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border-color: #334155;
+            --accent-color: #38bdf8;
+            --accent-hover: #0284c7;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.5), 0 2px 4px -2px rgba(0,0,0,0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.5;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .title-container h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+
+        .title-container p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .theme-toggle {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 0.6rem 1.2rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            color: var(--text-primary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--accent-color);
+        }
+
+        .stat-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+        }
+
+        @media (max-width: 600px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .chart-card h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        footer {
+            margin-top: 3rem;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="title-container">
+            <h1><i class="fa-solid fa-chart-pie"></i> Scopus Data Analytics Dashboard</h1>
+            <p>วิเคราะห์ข้อมูลงานวิจัยจากฐานข้อมูล Scopus (จำนวนทั้งสิ้น 600 รายการ)</p>
+        </div>
+        <button id="themeToggle" class="theme-toggle">
+            <i id="themeIcon" class="fa-solid fa-moon"></i>
+            <span id="themeText">Dark Mode</span>
+        </button>
+    </header>
+
+    <section class="stats-grid">
+        <div class="stat-card">
+            <h3>600</h3>
+            <p>เอกสารทั้งหมด (Documents)</p>
+        </div>
+        <div class="stat-card">
+            <h3>10</h3>
+            <p>วารสารชั้นนำ (Top Journals)</p>
+        </div>
+        <div class="stat-card">
+            <h3>600</h3>
+            <p>กลุ่มผู้แต่ง (Author Sets)</p>
+        </div>
+        <div class="stat-card">
+            <h3>2025 - 2027</h3>
+            <p>ช่วงปีที่ตีพิมพ์ (Publication Years)</p>
+        </div>
+    </section>
+
+    <section class="charts-grid">
+        <div class="chart-card">
+            <h2><i class="fa-solid fa-book-open"></i> Top 10 Journals / Source Titles</h2>
+            <canvas id="journalChart"></canvas>
+        </div>
+        <div class="chart-card">
+            <h2><i class="fa-solid fa-tags"></i> Top 10 Author Keywords</h2>
+            <canvas id="keywordChart"></canvas>
+        </div>
+        <div class="chart-card">
+            <h2><i class="fa-solid fa-file-lines"></i> Document Types Breakdown</h2>
+            <canvas id="docTypeChart"></canvas>
+        </div>
+        <div class="chart-card">
+            <h2><i class="fa-solid fa-calendar-days"></i> Publications by Year</h2>
+            <canvas id="yearChart"></canvas>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2026 Scopus Data Visualization | Hosted on GitHub Pages</p>
+    </footer>
+
+    <script>
+        // Theme Switcher Logic
+        const toggleBtn = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const themeText = document.getElementById('themeText');
+
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        if (savedTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            themeIcon.className = 'fa-solid fa-sun';
+            themeText.textContent = 'Light Mode';
+        }
+
+        toggleBtn.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            if (currentTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+                themeIcon.className = 'fa-solid fa-moon';
+                themeText.textContent = 'Dark Mode';
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+                themeIcon.className = 'fa-solid fa-sun';
+                themeText.textContent = 'Light Mode';
+            }
+            updateChartColors();
+        });
+
+        // Chart Data & Rendering
+        const journalLabels = ["Arthritis Research and Therapy", "ShodhKosh: Journal of Visual and Performing Arts", "International Journal of Advanced Computer Science and Applications", "Scientific Reports", "Engineering Research Express", "BMC Rheumatology", "Pediatric Rheumatology ", "ICMHI 2025 - 2025 9th International Conference on Medical and Health Informatics", "Journal of Medical Artificial Intelligence", "Egyptian Rheumatology and Rehabilitation"];
+        const journalCounts = [43, 29, 27, 26, 20, 18, 17, 15, 14, 13];
+
+        const keywordLabels = ["Rheumatoid Arthritis", "Artificial Intelligence", "Machine Learning", "Artificial Intelligence (Ai)", "Deep Learning", "Juvenile Idiopathic Arthritis", "Inflammation", "Methotrexate", "Arthritis", "Biomarker"];
+        const keywordCounts = [161, 92, 27, 25, 20, 20, 17, 13, 13, 10];
+
+        const docLabels = ["Article", "Conference paper"];
+        const docCounts = [561, 39];
+
+        const yearLabels = ["2025", "2026", "2027"];
+        const yearVals = [300, 298, 2];
+
+        let charts = [];
+
+        function renderCharts() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const textColor = isDark ? '#f8fafc' : '#1e293b';
+            const gridColor = isDark ? '#334155' : '#e2e8f0';
+
+            Chart.defaults.color = textColor;
+            Chart.defaults.borderColor = gridColor;
+
+            // Chart 1: Journals
+            const ctx1 = document.getElementById('journalChart').getContext('2d');
+            charts.push(new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: journalLabels,
+                    datasets: [{
+                        label: 'จำนวนบทความ',
+                        data: journalCounts,
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    plugins: { legend: { display: false } }
+                }
+            }));
+
+            // Chart 2: Keywords
+            const ctx2 = document.getElementById('keywordChart').getContext('2d');
+            charts.push(new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: keywordLabels,
+                    datasets: [{
+                        label: 'ความถี่ Keyword',
+                        data: keywordCounts,
+                        backgroundColor: '#10b981',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } }
+                }
+            }));
+
+            // Chart 3: Document Types
+            const ctx3 = document.getElementById('docTypeChart').getContext('2d');
+            charts.push(new Chart(ctx3, {
+                type: 'doughnut',
+                data: {
+                    labels: docLabels,
+                    datasets: [{
+                        data: docCounts,
+                        backgroundColor: ['#6366f1', '#f59e0b', '#ec4899', '#8b5cf6']
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            }));
+
+            // Chart 4: Year
+            const ctx4 = document.getElementById('yearChart').getContext('2d');
+            charts.push(new Chart(ctx4, {
+                type: 'line',
+                data: {
+                    labels: yearLabels,
+                    datasets: [{
+                        label: 'จำนวนงานวิจัย',
+                        data: yearVals,
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } }
+                }
+            }));
+        }
+
+        function updateChartColors() {
+            charts.forEach(chart => chart.destroy());
+            charts = [];
+            renderCharts();
+        }
+
+        renderCharts();
+    </script>
+</body>
+</html>
